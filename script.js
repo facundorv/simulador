@@ -1,61 +1,91 @@
-// Variables para almacenar datos del usuario
 let usuarioNombre;
 let edadUsuario;
 let resultadoSimulacion;
 
-// Constantes para valores fijos
-const maxEdad = 100; // Edad máxima
-const minEdad = 18;  // Edad mínima para participar en el simulador
+const maxEdad = 100;
+const minEdad = 18;
 
-// Array de resultados posibles
 let resultadosPosibles = ['Éxito', 'Fracaso', 'Pendiente'];
 
-// Función para pedir el nombre del usuario
-function pedirNombre() {
-    usuarioNombre = prompt("¿Cuál es tu nombre?");
-    console.log("Hola, " + usuarioNombre + "!");
-}
+// Referencias del DOM
+const nombreInput = document.getElementById('nombre');
+const edadInput = document.getElementById('edad');
+const iniciarBtn = document.getElementById('iniciar');
+const resultadoDiv = document.getElementById('resultado');
+const resultadoSimulacionElem = document.getElementById('resultadoSimulacion');
+const guardarResultadoBtn = document.getElementById('guardarResultado');
+const reiniciarBtn = document.getElementById('reiniciar');
+const introDiv = document.getElementById('intro');
 
-// Función para pedir la edad del usuario y verificar si es válida
-function pedirEdad() {
-    edadUsuario = parseInt(prompt("¿Cuántos años tienes?"));
-    if (isNaN(edadUsuario) || edadUsuario < minEdad || edadUsuario > maxEdad) {
-        console.log("Edad no válida. Debes tener entre " + minEdad + " y " + maxEdad + " años.");
-        return false;  // Indica que la edad no es válida
+// Función para pedir nombre
+function pedirNombre() {
+    usuarioNombre = nombreInput.value.trim();
+    if (usuarioNombre) {
+        console.log("Hola, " + usuarioNombre + "!");
     } else {
-        console.log("Edad aceptada.");
-        return true;  // Edad válida
+        alert("Por favor, ingresa tu nombre.");
     }
 }
 
-// Función que simula un resultado aleatorio
+// Función para pedir edad
+function pedirEdad() {
+    edadUsuario = parseInt(edadInput.value);
+    if (isNaN(edadUsuario) || edadUsuario < minEdad || edadUsuario > maxEdad) {
+        alert("Edad no válida. Debes tener entre " + minEdad + " y " + maxEdad + " años.");
+        return false;
+    } else {
+        console.log("Edad aceptada.");
+        return true;
+    }
+}
+
+// Función para realizar simulación
 function realizarSimulacion() {
     let resultado = resultadosPosibles[Math.floor(Math.random() * resultadosPosibles.length)];
     resultadoSimulacion = resultado;
-    console.log("El resultado de tu simulación es: " + resultadoSimulacion);
+    resultadoSimulacionElem.textContent = "El resultado de tu simulación es: " + resultadoSimulacion;
+    resultadoDiv.style.display = 'block';
+    introDiv.style.display = 'none';
 }
 
-// Función principal que usa las otras funciones
-function iniciarSimulador() {
-    console.log("Simulador iniciado...");
+// Función para guardar resultado en LocalStorage
+function guardarResultado() {
+    const simulacionData = {
+        nombre: usuarioNombre,
+        edad: edadUsuario,
+        resultado: resultadoSimulacion
+    };
+    localStorage.setItem('simulacionData', JSON.stringify(simulacionData));
+    alert("Resultado guardado!");
+}
 
-    // Pedir el nombre del usuario
+// Función para reiniciar simulador
+function reiniciarSimulador() {
+    nombreInput.value = '';
+    edadInput.value = '';
+    resultadoSimulacionElem.textContent = '';
+    resultadoDiv.style.display = 'none';
+    introDiv.style.display = 'block';
+}
+
+// Evento para iniciar la simulación
+iniciarBtn.addEventListener('click', () => {
     pedirNombre();
-
-    // Pedir la edad y verificar que sea válida
-    let edadValida = false;
-    while (!edadValida) {
-        edadValida = pedirEdad();
-    }
-
-    // Preguntar si quiere realizar la simulación
-    let continuarSimulacion = confirm("¿Quieres realizar la simulación?");
-    if (continuarSimulacion) {
+    if (pedirEdad()) {
         realizarSimulacion();
-    } else {
-        console.log("Simulación cancelada.");
     }
-}
+});
 
-// Llamamos a la función de inicio al cargar el script
-iniciarSimulador();
+// Evento para guardar el resultado
+guardarResultadoBtn.addEventListener('click', guardarResultado);
+
+// Evento para reiniciar el simulador
+reiniciarBtn.addEventListener('click', reiniciarSimulador);
+
+// Comprobar si hay datos guardados en LocalStorage al cargar la página
+document.addEventListener('DOMContentLoaded', () => {
+    const simulacionData = JSON.parse(localStorage.getItem('simulacionData'));
+    if (simulacionData) {
+        alert(`¡Bienvenido de nuevo, ${simulacionData.nombre}! Tu resultado guardado es: ${simulacionData.resultado}`);
+    }
+});
